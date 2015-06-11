@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using FizzBuzzLib;
 using NUnit.Framework;
@@ -7,23 +9,17 @@ namespace Test
 {
     public class FizzBuzzTest
     {
-        readonly FizzBuzz _sut = new FizzBuzz();
+        private const string Everything = "Everything";
+        private const string IS = "Is";
+        private const string Awesome = "Awesome";
 
-        [TestCaseSource(nameof(MultOf3))]
-        public void When_is_multiple_of_3_returns_fizz(int i)
-        {
-            var actual = _sut.DoIt(i);
-
-            Assert.That(actual, Is.EqualTo("Fizz"));
-        }
-
-        [TestCaseSource(nameof(MultOf5))]
-        public void When_is_multiple_of_5_returns_buzz(int i)
-        {
-            var actual = _sut.DoIt(i);
-
-            Assert.That(actual, Is.EqualTo("Buzz"));
-        }
+        readonly FizzBuzz _sut = new FizzBuzz(
+                new Dictionary<int, string>
+                {
+                    [3] = Everything,
+                    [5] = IS,
+                    [7] = Awesome
+                });
 
         [TestCase(1)]
         [TestCase(2)]
@@ -36,24 +32,33 @@ namespace Test
             Assert.That(actual, Is.EqualTo(i.ToString()));
         }
 
-        [TestCase(15)]
-        [TestCase(30)]
-        [TestCase(45)]
-        [TestCase(60)]
-        public void When_is_multiple_of_both_returns_fizzbuzz(int i)
+        [TestCaseSource(nameof(TestCases))]
+        public string Returns_all_the_words_of_the_matching_numbers(int i)
         {
-            var actual = _sut.DoIt(i);
-
-            Assert.That(actual, Is.EqualTo("FizzBuzz"));
+            return _sut.DoIt(i);
         }
 
+        private static IEnumerable TestCases()
+        {
+            return new Dictionary<string, IEnumerable<int>>
+            {
+                {Everything, MultOf3()},
+                {IS, MultOf5()},
+                {Awesome, MultOf7()},
+                {Everything + IS, new[] {15, 30, 45, 60} },
+                {Everything + Awesome, new[] { 21, 42, 84} },
+                {IS + Awesome, new[] { 35, 70, 140} },
+                {Everything + IS + Awesome, Enumerable.Range(1, 10).Select(i => 3 * 5 * 7 * i) },
+            }
+            .SelectMany(kvp => kvp.Value.Select(v => new TestCaseData(v).Returns(kvp.Key)));
+        }
 
         [Test]
         public void Acceptance()
         {
             // Print the sequence to the console
             Enumerable
-                .Range(1, 100)
+                .Range(1, 5 * 7 * 3)
                 .Select(_sut.DoIt)
                 .ToList()
                 .ForEach(Console.Out.WriteLine);
@@ -61,12 +66,16 @@ namespace Test
 
         private static int[] MultOf3()
         {
-            return new[] {3, 6, 9, 12, 18, 21, 24, 27, 33, 36, 39};
+            return new[] {3, 6, 9, 12, 18, 24, 27, 33, 36, 39};
         }
 
         private static int[] MultOf5()
         {
-            return new[] { 5, 10, 20, 25, 35, 40, 50, 55 };
+            return new[] { 5, 10, 20, 25, 40, 50, 55 };
+        }
+        private static int[] MultOf7()
+        {
+            return new[] { 7, 14, 28, 56 };
         }
     }
 }

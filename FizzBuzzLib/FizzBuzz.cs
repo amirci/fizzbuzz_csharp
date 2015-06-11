@@ -1,25 +1,26 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace FizzBuzzLib
 {
     public class FizzBuzz
     {
-        private const string Fizz = "Fizz";
-        private const string Buzz = "Buzz";
+        private readonly IDictionary<int, string> _dictionary;
+
+        public FizzBuzz(IDictionary<int, string> dictionary)
+        {
+            this._dictionary = dictionary;
+        }
 
         public string DoIt(int i)
         {
-            Func<bool> isFizz = () => i%3 == 0;
-            Func<bool> isBuzz = () => i%5 == 0;
-            Func<bool> isBoth = () => isFizz() && isBuzz();
+            var words = this._dictionary
+                .Where(kvp => i%kvp.Key == 0)
+                .Select(kvp => kvp.Value)
+                .Aggregate("", (a, b) => a+ b);
 
-            if (isBoth()) return Fizz + Buzz;
-
-            if (isFizz()) return Fizz;
-
-            if (isBuzz()) return Buzz;
-
-            return i.ToString();
+            return words == string.Empty ? i.ToString() : words;
         }
     }
 }
